@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPU 温度查询</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+
+<h1>GPU 温度查询</h1>
+
+<!-- 输入框，用户输入接口地址 -->
+<input type="text" id="apiUrl" placeholder="请输入API接口地址">
+
+<!-- 查询按钮 -->
+<button id="queryBtn">查询</button>
+
+<!-- 结果展示区域 -->
+<div id="resultArea">
+    <h2>查询结果：</h2>
+    <ul id="gpuInfoList"></ul>
+    <p id="statusMsg"></p>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $('#queryBtn').on('click', function() {
+            var apiUrl = $('#apiUrl').val(); // 获取用户输入的接口地址
+
+            if (!apiUrl) {
+                alert('请输入有效的API接口地址！');
+                return;
+            }
+
+            $.ajax({
+                url: apiUrl,
+                type: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    // 清空之前的结果
+                    $('#gpuInfoList').empty();
+                    $('#statusMsg').text('');
+
+                    // 遍历gpuInfo数组并展示
+                    if (data.gpuInfo && data.gpuInfo.length > 0) {
+                        $.each(data.gpuInfo, function(index, gpu) {
+                            $('#gpuInfoList').append('<li>GPU 名称: ' + gpu.name + ', 温度: ' + gpu.temperature + '</li>');
+                        });
+                    } else {
+                        $('#gpuInfoList').append('<li>未查询到GPU信息</li>');
+                    }
+
+                    // 展示状态信息
+                    $('#statusMsg').text(data.status || '未提供状态信息');
+                },
+                error: function(xhr, status, error) {
+                    // 请求失败的处理
+                    alert('查询出错: ' + error);
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
