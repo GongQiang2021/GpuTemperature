@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.io.IOException;
 import java.util.List;
 
 
@@ -23,4 +24,17 @@ public class GpuController {
     public GpuResponse getTemperature() {
         return gpuService.getTemperatureByIp();
     }
+    @GetMapping("/gpuMax")
+    @CrossOrigin(origins = "*")
+    public int readTodaysMaxTemperatureFromLog() {
+        try {
+            return gpuService.readTodaysMaxTemperatureFromLog();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+
+
 }

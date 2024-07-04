@@ -1,8 +1,10 @@
 # 应用服务 WEB 访问端口
 server:
-  port: 7080
+  port: 8098
 
 # 警戒温度
 temperature:
   alex: 40
+  log:
+   address: D://GPUTemperatureLog.txt
 

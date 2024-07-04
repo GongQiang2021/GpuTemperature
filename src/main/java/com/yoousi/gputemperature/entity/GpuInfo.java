@@ -3,11 +3,21 @@ package com.yoousi.gputemperature.entity;
 public class GpuInfo {
     private String name;
     private String temperature;
+    private int maxTemperature;
 
     // 构造方法
-    public GpuInfo(String name, String temperature) {
+    public GpuInfo(String name, String temperature, int maxTemperature) {
         this.name = name;
         this.temperature = temperature;
+        this.maxTemperature = maxTemperature;
+    }
+
+    public int getMaxTemperature() {
+        return maxTemperature;
+    }
+
+    public void setMaxTemperature(int maxTemperature) {
+        this.maxTemperature = maxTemperature;
     }
 
     // Getter和Setter方法
