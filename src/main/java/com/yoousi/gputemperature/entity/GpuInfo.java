@@ -4,12 +4,23 @@ public class GpuInfo {
     private String name;
     private String temperature;
     private int maxTemperature;
+    private String maxTemperatureTime;
+
+
+    public String getMaxTemperatureTime() {
+        return maxTemperatureTime;
+    }
+
+    public void setMaxTemperatureTime(String maxTemperatureTime) {
+        this.maxTemperatureTime = maxTemperatureTime;
+    }
 
     // 构造方法
-    public GpuInfo(String name, String temperature, int maxTemperature) {
+    public GpuInfo(String name, String temperature, int maxTemperature,String maxTemperatureTime) {
         this.name = name;
         this.temperature = temperature;
         this.maxTemperature = maxTemperature;
+        this.maxTemperatureTime = maxTemperatureTime;
     }
 
     public int getMaxTemperature() {

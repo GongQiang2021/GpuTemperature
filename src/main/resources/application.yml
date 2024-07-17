@@ -4,7 +4,7 @@ server:
 
 # 警戒温度
 temperature:
-  alex: 40
+  alex: 72
   log:
-   address: D://GPUTemperatureLog.txt
+   address: D://java/GPUTemperatureLog.txt
 
