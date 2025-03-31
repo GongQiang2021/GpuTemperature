@@ -5,6 +5,7 @@ import com.yoousi.gputemperature.entity.GpuResponse;
 import com.yoousi.gputemperature.entity.MaxTemperatureFromLog;
 import com.yoousi.gputemperature.service.GpuService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -29,8 +30,7 @@ public class GpuServiceImpl implements GpuService {
     public GpuResponse getTemperatureByIp( ) {
         GpuResponse gpuResponse =new GpuResponse();
         List<GpuInfo> temperatures = new ArrayList<>();
-        int maxTemperatureFromLog = 0;
-        MaxTemperatureFromLog maxFromLog = new MaxTemperatureFromLog();
+        MaxTemperatureFromLog maxFromLog ;
         try {
             maxFromLog = readTodaysMaxTemperatureFromLog();    // 从日志文件读取最高温度
         } catch (IOException e) {
@@ -63,7 +63,6 @@ public class GpuServiceImpl implements GpuService {
                     // 检查当前温度是否高于已知的最高温度
                     if (Integer.parseInt(tempLine.trim()) > currentMaxTemperature) {
                         currentMaxTemperature = Integer.parseInt(tempLine.trim()); // 更新当前最高温度
-                        updateMaxTemperatureInLog(currentMaxTemperature); // 更新日志文件中的最高温度
                     }
                     if (Integer.parseInt(tempLine.trim()) > AlexTemperature) {
                         temperatureError = "警告：至少有一个GPU的温度超过了"+AlexTemperature+"C！";
@@ -81,7 +80,48 @@ public class GpuServiceImpl implements GpuService {
 
         return gpuResponse;
     }
+    @Scheduled(fixedRate = 3000)
+    public void realTimeTemperature(){
+        MaxTemperatureFromLog maxFromLog ;
+        try {
+            maxFromLog = readTodaysMaxTemperatureFromLog();    // 从日志文件读取最高温度
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        int currentMaxTemperature = maxFromLog.getMaxTemperature();          // 初始化当前最高温度为日志中的最高温度
+        try {
+            // 构造命令，请求GPU个数
+            Process process = Runtime.getRuntime().exec("nvidia-smi --query-gpu=count " +
+                    "--format=csv,noheader,nounits");
+            // 用于读取命令执行后的输出
+            BufferedReader countReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String countLine = countReader.readLine();
+            // 得到GPU个数
+            int gpuCount = Integer.parseInt(countLine.trim());
+            // 循环获取每个GPU温度放入列表
+            for (int i = 0; i < gpuCount; i++) {
+                // 构建命令获取GPU温度
+                Process tempProcess = Runtime.getRuntime().exec("nvidia-smi --query-gpu=temperature.gpu " +
+                        "--format=csv,noheader,nounits --id=" + i);
+                // 用于读取命令执行后的输出
+                BufferedReader tempReader = new BufferedReader(new InputStreamReader(tempProcess.getInputStream()));
+                String tempLine = tempReader.readLine();
+                // 读取的温度不为空且多个自然数组成
+                if (tempLine != null && tempLine.matches("\\d+")) {
+                    // 将温度去除空格转为数字放入列表中
 
+                    // 检查当前温度是否高于已知的最高温度
+                    if (Integer.parseInt(tempLine.trim()) > currentMaxTemperature) {
+                        currentMaxTemperature = Integer.parseInt(tempLine.trim()); // 更新当前最高温度
+                        updateMaxTemperatureInLog(currentMaxTemperature); // 更新日志文件中的最高温度
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.print("检测GPU温度时发生错误：" + e.getMessage());
+        }
+    }
     // 从日志文件读取最高温度
     public MaxTemperatureFromLog readTodaysMaxTemperatureFromLog() throws IOException {
         MaxTemperatureFromLog maxTemperatureFromLog = new MaxTemperatureFromLog();
